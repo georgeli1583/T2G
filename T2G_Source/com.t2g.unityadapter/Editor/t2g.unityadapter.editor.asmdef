@@ -1,0 +1,18 @@
+{
+    "name": "t2g.unityadapter.editor",
+    "rootNamespace": "",
+    "references": [
+        "GUID:f2d49d9fa7e7eb3418e39723a7d3b92f",
+        "GUID:e0cd26848372d4e5c891c569017e11f1",
+        "GUID:5f578d83446434d4b87b7022406c9897"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
