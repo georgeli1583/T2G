@@ -9,19 +9,6 @@ using UnityEngine.EventSystems;
 using Newtonsoft.Json;
 using T2G.UnityAdapter;
 
-public class Defs
-{
-    public static readonly string k_UnityEditorPath = "UnityEditorPath";
-    public static readonly string k_UserName = "UserName";
-    public static readonly string k_AssistantName = "AssistantName";
-    public static readonly string k_ResourcePath = "ResoucePath";
-    public static readonly string k_ProjectPathname = "ProjectPathName";
-
-    public static readonly string k_InitRefreshAssetDatabase = "RefreshAssetData";
-    public static readonly string k_InitOpenScene = "OpenScene";
-    public static readonly string k_InitStartListener = "StartListener";
-}
-
 public class ConsoleController : MonoBehaviour
 {
     private static ConsoleController _instance = null;
@@ -36,7 +23,7 @@ public class ConsoleController : MonoBehaviour
         Error
     }
 
-    private string[] _senderTextColors = { "white", "white", "red", "orange", "red" };
+    private string[] _senderTextColors = { "white", "white", "green", "orange", "red" };
 
     private const string k_ConsoleSizeIndex = "ConsoleSizeIndex";
 
@@ -62,7 +49,6 @@ public class ConsoleController : MonoBehaviour
     int _inputHistoryIndex = -1;
     readonly int _maxInputHistorySize = 32;
 
-    
     bool IsBusy
     {
         set
@@ -83,7 +69,7 @@ public class ConsoleController : MonoBehaviour
             }
             else
             {
-                _ProjectPathName.text = "Project[" + value + "]";
+                _ProjectPathName.text = "Project [" + value + "]";
             }
             PlayerPrefs.SetString(Defs.k_ProjectPathname, value);
         }
@@ -112,6 +98,7 @@ public class ConsoleController : MonoBehaviour
     private void OnDestroy()
     {
         CommunicatorClient.Instance.OnFailedToConnectToServer -= HandleOnFailedConnectToServer;
+        CommunicatorClient.Instance.Disconnect();
 
         _CommandOptions.onValueChanged.RemoveAllListeners();
         _InputMessage.onSubmit.RemoveAllListeners();
@@ -177,7 +164,7 @@ public class ConsoleController : MonoBehaviour
     {
         bool isActive = !_SettingsPanel.activeSelf;
         _SettingsPanel.SetActive(isActive);
-        if(!isActive)
+        if (!isActive)
         {
             SetFocusONConsoleInputField();
         }
@@ -251,23 +238,18 @@ public class ConsoleController : MonoBehaviour
         //Execute if it is a command 
         if (CommandSystem.Instance.IsCommand(inputStr))             //Process command
         {
-            var cmdSys = CommandSystem.Instance;
-            var cmdStr = Regex.Replace(inputStr, " {2,}", " ");  //ensure only one space delimeter
+             var cmdStr = Regex.Replace(inputStr, " {2,}", " ");  //ensure only one space delimeter
             string[] cmdAndArgs = cmdStr.Split(" ");
             string cmd = cmdAndArgs[0].ToLower();
 
             string[] args = cmdAndArgs.Where((item, index) => index != 0).ToArray();
-            IsBusy = true;
-            if(!cmdSys.ExecuteCommand(
-                (succeeded, sender, message) => 
-                {
-                    WriteConsoleMessage(sender, message);
-                    IsBusy = false;
-                },
-                cmd, args))
-            {
-                IsBusy = false;
-            }
+             var cmdSys = CommandSystem.Instance;
+            cmdSys.ExecuteCommand(
+                    (succeeded, sender, message) =>
+                    {
+                        WriteConsoleMessage(sender, message);
+                    },
+                    cmd, args);
         }
         else  //process a prompt
         {

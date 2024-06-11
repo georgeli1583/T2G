@@ -3,6 +3,7 @@ using UnityEditor;
 using Unity.Jobs;
 using Unity.Networking.Transport;
 using Unity.Collections;
+using UnityEngine;
 
 namespace T2G.UnityAdapter
 {
@@ -30,21 +31,16 @@ namespace T2G.UnityAdapter
             }
         }
 
-
         protected override void Dispose()
         {
-            if (_connections[0].IsCreated)
+            if (IsActive)
             {
-                _networkDriver.Disconnect(_connections[0]);
+                if (_connections[0].IsCreated)
+                {
+                    _networkDriver.Disconnect(_connections[0]);
+                }
+                base.Dispose();
             }
-            base.Dispose();
-        }
-
-        [InitializeOnLoadMethod]
-        public static void Start()
-        {
-            Instance.Initialize();
-            Instance.StartServer();
         }
 
         public void StartServer()

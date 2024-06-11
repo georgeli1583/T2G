@@ -2,34 +2,32 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using UnityEngine;
-using Debug = UnityEngine.Debug;
-
 public class CmdCreateProject : Command
 {
     public static readonly string CommandKey = "CreateProject";
 
     private string _projectPathName;
     private Process _process;
-
+    private EventHandler _eventHandler;
     public override bool Execute(params string[] args)
     {
         if (!PlayerPrefs.HasKey(Defs.k_UnityEditorPath))
         {
-            OnExecutionCompleted?.Invoke(false, ConsoleController.eSender.System, "Unity Editor path is not set!");
+            OnExecutionCompleted?.Invoke(false, ConsoleController.eSender.Error, "Unity Editor path is not set!");
             return false;
         }
         string unityEditorPath = PlayerPrefs.GetString(Defs.k_UnityEditorPath);
 
         if (!PlayerPrefs.HasKey(Defs.k_ResourcePath))
         {
-            OnExecutionCompleted?.Invoke(false, ConsoleController.eSender.System, "Resource path is not set!");
+            OnExecutionCompleted?.Invoke(false, ConsoleController.eSender.Error, "Resource path is not set!");
             return false;
         }
         string resourcePath = PlayerPrefs.GetString(Defs.k_ResourcePath);
 
         if(args.Length < 1)
         {
-            OnExecutionCompleted?.Invoke(false, ConsoleController.eSender.System, "The project's path and name argument is missing!");
+            OnExecutionCompleted?.Invoke(false, ConsoleController.eSender.Error, "The project's path argument is missing!");
             return false;
         }
         _projectPathName = args[0];
@@ -50,25 +48,28 @@ public class CmdCreateProject : Command
             ConsoleController.Instance.ProjectPathName = _projectPathName;
 
             var arguments = $"-batchMode -createproject {_projectPathName}";
-            //string packagePath = Path.Combine(resourcePath, "com.t2g.unityadapter/package.json");   //Only allows 1 package
+            //string packagePath = Path.Combine(resourcePath, "com.t2g.unityadapter\\package.json");   //Only allows 1 package
             //arguments += " -importPackage " + packagePath;
-            //arguments += " -quit";
+            arguments += " -quit";
 
+            _eventHandler = new EventHandler(ProcessExitedHandler);
             _process = new Process();
-            
-            _process.EnableRaisingEvents = true;
-            _process.Exited += new EventHandler(ProcessExitedHandler);
+            _process.Exited += _eventHandler;
             _process.StartInfo.FileName = unityEditorPath;
             _process.StartInfo.Arguments = arguments;
             _process.EnableRaisingEvents = true;
             _process.Start();
-
+            _process.WaitForExit();
             return true;
         }
         catch (Exception e)
         {
-            _process.Close();
-            OnExecutionCompleted?.Invoke(false, ConsoleController.eSender.System, "Error: " + e.Message);
+            if (_process != null)
+            {
+                _process.Close();
+                _process.Exited -= _eventHandler;
+            }
+            OnExecutionCompleted?.Invoke(false, ConsoleController.eSender.Error, "Error: " + e.Message);
             return false;
         }
     }
@@ -93,9 +94,10 @@ public class CmdCreateProject : Command
         }
         else
         {
-            OnExecutionCompleted?.Invoke(false, ConsoleController.eSender.System, 
-                $"Failed to create project {_projectPathName}! Exit Code: {_process.ExitCode}");
+            OnExecutionCompleted?.Invoke(false, ConsoleController.eSender.Error, 
+                $"Failed! Exit Code: {_process.ExitCode}");
         }
         _process.Close();
+        _process.Exited -= _eventHandler;
     }
 }

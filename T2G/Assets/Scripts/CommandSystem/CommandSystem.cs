@@ -15,8 +15,9 @@ public class CommandSystem : MonoBehaviour
     void RegisterCommands()
     {
         _commandsRegistry.Add(CmdCreateProject.CommandKey.ToLower(), typeof(CmdCreateProject));
-        //_commandsRegistry.Add(OpenProjectCommand.CommandKey.ToLower(), typeof(OpenProjectCommand));
-        //_commandsRegistry.Add(InitProjectCommand.CommandKey.ToLower(), typeof(InitProjectCommand));
+        _commandsRegistry.Add(CmdInitProject.CommandKey.ToLower(), typeof(CmdInitProject));
+        _commandsRegistry.Add(CmdOpenProject.CommandKey.ToLower(), typeof(CmdOpenProject));
+
         //_commandsRegistry.Add(ConnectCommand.CommandKey.ToLower(), typeof(ConnectCommand));
         //_commandsRegistry.Add(DisconnectCommand.CommandKey.ToLower(), typeof(DisconnectCommand));
         //_commandsRegistry.Add(BeginGameDescCommand.CommandKey.ToLower(), typeof(BeginGameDescCommand));
@@ -42,8 +43,10 @@ public class CommandSystem : MonoBehaviour
 
     public bool IsCommand(string inputString)
     {
+        inputString = inputString.Trim();
         int idx = inputString.IndexOf(" ");
-        return (idx > 0 && _commandsRegistry.ContainsKey(inputString.Substring(0, idx)));
+        string cmd = idx > 0 ? inputString.Substring(0, idx) : inputString;
+        return _commandsRegistry.ContainsKey(cmd);
     }
 
     public bool ExecuteCommand(Action<bool, ConsoleController.eSender, string> OnExecutionCompleted, 

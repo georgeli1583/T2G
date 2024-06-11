@@ -1,6 +1,6 @@
 {
   "dependencies": {
-    "com.t2g.unityadapter": "file:C:/MyStuffs/BU/Projects/com.T2G.UnityAdapter",
+    "com.t2g.unityadapter": "file:C:/Projects/BU/T2G_Source/com.t2g.unityadapter",
     "com.unity.collab-proxy": "2.3.1",
     "com.unity.feature.development": "1.0.2",
     "com.unity.inputsystem": "1.8.2",

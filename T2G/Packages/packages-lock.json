@@ -1,12 +1,11 @@
 {
   "dependencies": {
     "com.t2g.unityadapter": {
-      "version": "file:C:/MyStuffs/BU/Projects/com.T2G.UnityAdapter",
+      "version": "file:C:/Projects/BU/T2G_Source/com.t2g.unityadapter",
       "depth": 0,
       "source": "local",
       "dependencies": {
         "com.unity.transport": "1.4.1",
-        "com.unity.textmeshpro": "3.0.6",
         "com.unity.nuget.newtonsoft-json": "3.0.2"
       }
     },
@@ -158,14 +157,6 @@
         "com.unity.settings-manager": "1.0.1"
       },
       "url": "https://packages.unity.com"
-    },
-    "com.unity.textmeshpro": {
-      "version": "5.0.0",
-      "depth": 1,
-      "source": "builtin",
-      "dependencies": {
-        "com.unity.ugui": "2.0.0"
-      }
     },
     "com.unity.timeline": {
       "version": "1.8.6",
