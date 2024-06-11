@@ -2,16 +2,13 @@ using System;
 using Unity.Jobs;
 using Unity.Collections;
 using Unity.Networking.Transport;
+using UnityEngine;
+using Newtonsoft.Json;
 
 namespace T2G.UnityAdapter
 {
     public enum eMessageType : byte     //TODO: used to improve the communication's message serialization and deserialization 
     {
-        //System reserved types
-        ClientId = 0,
-        UserName,
-        ResourcePath,
-        GenerateGame,
         //Primitive types
         Int,
         Byte,
@@ -34,7 +31,9 @@ namespace T2G.UnityAdapter
         String128,
         String512,
         String4096,
-        RawBits
+        RawBits,
+        //System reserved types
+        SettingsData,
         //Complex data structures
         //...
     }
@@ -43,6 +42,37 @@ namespace T2G.UnityAdapter
     {
         public eMessageType Type;
         public FixedString4096Bytes Message;
+    }
+
+    [Serializable]
+    public class Settings
+    {
+        [SerializeField] public string UnityEditorPath;
+        [SerializeField] public string RecoursePath;
+        [SerializeField] public string User;
+        [SerializeField] public string Assistant;
+
+        public string ToJson()
+        {
+            UnityEditorPath = PlayerPrefs.GetString(Defs.k_UnityEditorPath, string.Empty);
+            Assistant = PlayerPrefs.GetString(Defs.k_ResourcePath, string.Empty);
+            RecoursePath = PlayerPrefs.GetString(Defs.k_UserName, "You");
+            User = PlayerPrefs.GetString(Defs.k_AssistantName, "Assistant");
+            return JsonConvert.SerializeObject(this);
+        }
+
+        public void FromJson(string jsonData)
+        {
+            var settings = JsonConvert.DeserializeObject<Settings>(jsonData);
+            UnityEditorPath = settings.UnityEditorPath;
+            RecoursePath = settings.RecoursePath;
+            User = settings.User;
+            Assistant = settings.Assistant;
+            PlayerPrefs.SetString(Defs.k_UnityEditorPath, UnityEditorPath);
+            PlayerPrefs.SetString(Defs.k_ResourcePath, RecoursePath);
+            PlayerPrefs.SetString(Defs.k_UserName, User);
+            PlayerPrefs.SetString(Defs.k_AssistantName, Assistant);
+        }
     }
 
     public class Communicator

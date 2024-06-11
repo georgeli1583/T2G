@@ -79,6 +79,7 @@ public class ConsoleController : MonoBehaviour
     {
         _instance = this;
         CommunicatorClient.Instance.OnFailedToConnectToServer += HandleOnFailedConnectToServer;
+        CommunicatorClient.Instance.OnConnectedToServer += HandleOnConnectedToServer;
     }
 
     void Start()
@@ -98,6 +99,7 @@ public class ConsoleController : MonoBehaviour
     private void OnDestroy()
     {
         CommunicatorClient.Instance.OnFailedToConnectToServer -= HandleOnFailedConnectToServer;
+        CommunicatorClient.Instance.OnConnectedToServer -= HandleOnConnectedToServer;
         CommunicatorClient.Instance.Disconnect();
 
         _CommandOptions.onValueChanged.RemoveAllListeners();
@@ -253,7 +255,7 @@ public class ConsoleController : MonoBehaviour
         }
         else  //process a prompt
         {
-
+            
         }
 
         //Clear input
@@ -327,7 +329,19 @@ public class ConsoleController : MonoBehaviour
 
     void HandleOnFailedConnectToServer()
     {
-        WriteConsoleMessage(eSender.System, "Failed to connect to the server!");
+        WriteConsoleMessage(eSender.Error, "Failed to connect to the server!");
     }
 
+
+
+    void HandleOnConnectedToServer()
+    {
+        Settings settings = new Settings();
+        MessageStruct msgData = new MessageStruct
+        {
+            Type = eMessageType.SettingsData,
+            Message = settings.ToJson()
+        };
+        CommunicatorClient.Instance.SendMessage(msgData);
+    }
 }

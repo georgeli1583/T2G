@@ -3,7 +3,7 @@ using UnityEditor;
 using Unity.Jobs;
 using Unity.Networking.Transport;
 using Unity.Collections;
-using UnityEngine;
+using Newtonsoft.Json;
 
 namespace T2G.UnityAdapter
 {
@@ -167,7 +167,17 @@ namespace T2G.UnityAdapter
                             Message = readStream.ReadFixedString4096()
                         };
 
-                        comm.PoolReceivedMessage(receivedMessage);
+                        switch(receivedMessage.Type)
+                        {
+                            case eMessageType.SettingsData:
+                                Settings settings = new Settings();
+                                settings.FromJson(receivedMessage.Message.ToString());
+                                break;
+                            default:
+                                comm.PoolReceivedMessage(receivedMessage);
+                                break;
+                        }
+                        
                     }
                     else if (command == NetworkEvent.Type.Disconnect)
                     {
