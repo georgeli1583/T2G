@@ -332,15 +332,12 @@ public class ConsoleController : MonoBehaviour
         WriteConsoleMessage(eSender.Error, "Failed to connect to the server!");
     }
 
-
-
     void HandleOnConnectedToServer()
     {
-        Settings settings = new Settings();
         MessageStruct msgData = new MessageStruct
         {
             Type = eMessageType.SettingsData,
-            Message = settings.ToJson()
+            Message = Settings.ToJson()
         };
         CommunicatorClient.Instance.SendMessage(msgData);
     }

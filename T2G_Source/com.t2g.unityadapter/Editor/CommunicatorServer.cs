@@ -1,9 +1,11 @@
+#if UNITY_EDITOR
 using System;
 using UnityEditor;
 using Unity.Jobs;
 using Unity.Networking.Transport;
 using Unity.Collections;
-using Newtonsoft.Json;
+using SimpleJSON;
+using UnityEngine;
 
 namespace T2G.UnityAdapter
 {
@@ -71,7 +73,7 @@ namespace T2G.UnityAdapter
             
             EditorApplication.update -= UpdateServer;
             
-            if (_connections[0].IsCreated)
+            if (_connections != null && _connections.IsCreated && _connections.Length > 0  && _connections[0].IsCreated)
             {
                 BeforeDisconnectClient?.Invoke();
                 _networkDriver.Disconnect(_connections[0]);
@@ -90,8 +92,11 @@ namespace T2G.UnityAdapter
                 return;
             }
 
-            if(!_connections[0].IsCreated)
+            _jobHandle = _networkDriver.ScheduleUpdate();
+
+            if (!IsConnected)
             {
+                //Debug.Log("Waiting for connection ...");
                 var connectionJob = new ServerConnectionJob()
                 {
                     Driver = _networkDriver,
@@ -100,7 +105,7 @@ namespace T2G.UnityAdapter
 
                 _jobHandle = connectionJob.Schedule(_jobHandle);
                 _jobHandle.Complete();
-                if (_connections[0].IsCreated)
+                if (IsConnected)
                 {
                     OnClientConnected?.Invoke();
                 }
@@ -118,10 +123,11 @@ namespace T2G.UnityAdapter
                 _jobHandle = sendReceiveJob.Schedule(_jobHandle);
                 _jobHandle.Complete();
 
-                if (!IsConnected)
-                {
-                    OnClientDisconnected?.Invoke();
-                }
+                //Uncommend this block if "if (command == NetworkEvent.Type.Disconnect)" doesn't happen
+                //if (!IsConnected)
+                //{
+                //    OnClientDisconnected?.Invoke();
+                //}
             }
         }
 
@@ -170,8 +176,7 @@ namespace T2G.UnityAdapter
                         switch(receivedMessage.Type)
                         {
                             case eMessageType.SettingsData:
-                                Settings settings = new Settings();
-                                settings.FromJson(receivedMessage.Message.ToString());
+                                 Settings.FromJson(receivedMessage.Message.ToString());
                                 break;
                             default:
                                 comm.PoolReceivedMessage(receivedMessage);
@@ -191,3 +196,4 @@ namespace T2G.UnityAdapter
         }
     }
 }
+#endif

@@ -23,7 +23,7 @@ namespace T2G.UnityAdapter
         public Action OnDisconnectedFromServer;
 
         float _connectTimer = 0.0f;
-        readonly float k_connectTimeout = 15.0f;
+        readonly float k_connectTimeout = 3.0f;
 
         public eClientState ClientState { get; private set; } = eClientState.Disconnected;
 
@@ -40,6 +40,14 @@ namespace T2G.UnityAdapter
             }
         }
 
+        protected override void Dispose()
+        {
+            if(_connections != null && _connections.Length > 0 && _connections[0] != null && _connections[0].IsCreated)
+            {
+                Disconnect();
+            }
+            base.Dispose();
+        }
 
         public void StartClient()
         {
@@ -48,9 +56,9 @@ namespace T2G.UnityAdapter
                 return;
             }
 
-            if (_networkDriver.IsCreated)
+            if (IsActive)
             {
-                _networkDriver.Dispose();   //Avoid accidently exit wich caused networkDriver is not closed
+                Dispose();
             }
 
             Initialize();

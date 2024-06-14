@@ -3,7 +3,7 @@ using Unity.Jobs;
 using Unity.Collections;
 using Unity.Networking.Transport;
 using UnityEngine;
-using Newtonsoft.Json;
+using SimpleJSON;
 
 namespace T2G.UnityAdapter
 {
@@ -47,27 +47,42 @@ namespace T2G.UnityAdapter
     [Serializable]
     public class Settings
     {
-        [SerializeField] public string UnityEditorPath;
-        [SerializeField] public string RecoursePath;
-        [SerializeField] public string User;
-        [SerializeField] public string Assistant;
+        public static string UnityEditorPath;
+        public static string RecoursePath;
+        public static string User;
+        public static string Assistant;
 
-        public string ToJson()
+        public static string ToJson()
         {
-            UnityEditorPath = PlayerPrefs.GetString(Defs.k_UnityEditorPath, string.Empty);
-            Assistant = PlayerPrefs.GetString(Defs.k_ResourcePath, string.Empty);
-            RecoursePath = PlayerPrefs.GetString(Defs.k_UserName, "You");
-            User = PlayerPrefs.GetString(Defs.k_AssistantName, "Assistant");
-            return JsonConvert.SerializeObject(this);
+            Load();
+            JSONObject jsonObj = new JSONObject();
+            jsonObj.Add("UnityEditorPath", UnityEditorPath);
+            jsonObj.Add("RecoursePath", RecoursePath);
+            jsonObj.Add("User", User);
+            jsonObj.Add("Assistant", Assistant);
+            return jsonObj.ToString();
         }
 
-        public void FromJson(string jsonData)
+        public static void FromJson(string jsonData)
         {
-            var settings = JsonConvert.DeserializeObject<Settings>(jsonData);
-            UnityEditorPath = settings.UnityEditorPath;
-            RecoursePath = settings.RecoursePath;
-            User = settings.User;
-            Assistant = settings.Assistant;
+            JSONObject jsonObj = (JSONObject)JSON.Parse(jsonData);
+            UnityEditorPath = jsonObj["UnityEditorPath"];
+            RecoursePath = jsonObj["RecoursePath"];
+            User = jsonObj["User"];
+            Assistant = jsonObj["Assistant"];
+            Save();
+        }
+
+        public static void Load()
+        {
+            UnityEditorPath = PlayerPrefs.GetString(Defs.k_UnityEditorPath, string.Empty);
+            RecoursePath = PlayerPrefs.GetString(Defs.k_ResourcePath, string.Empty);
+            User = PlayerPrefs.GetString(Defs.k_UserName, "You");
+            Assistant = PlayerPrefs.GetString(Defs.k_AssistantName, "Assistant");
+        }
+
+        public static void Save()
+        {
             PlayerPrefs.SetString(Defs.k_UnityEditorPath, UnityEditorPath);
             PlayerPrefs.SetString(Defs.k_ResourcePath, RecoursePath);
             PlayerPrefs.SetString(Defs.k_UserName, User);
@@ -85,9 +100,9 @@ namespace T2G.UnityAdapter
         public readonly int MaxMessageLength = 4096;
 
 
-        public Action<string> OnSystemError;
-        public Action<string> OnSentMessage;
-        public Action<string> OnReceivedMessage;
+        static public Action<string> OnSystemError;
+        static public Action<string> OnSentMessage;
+        static public Action<string> OnReceivedMessage;
 
         public enum eNetworkPipeline
         {
@@ -119,12 +134,8 @@ namespace T2G.UnityAdapter
             _networkSettings = new NetworkSettings();
             _networkSettings.WithNetworkConfigParameters();         //Use default
             _networkSettings.WithNetworkSimulatorParameters();      //Use default
+
             _networkDriver = NetworkDriver.Create(_networkSettings);
-            _connections = new NativeArray<NetworkConnection>(1, Allocator.Persistent);
-            _connections[0] = default(NetworkConnection);
-            _sendMessagePool = new NativeArray<MessageStruct>(SendMessagePoolSize, Allocator.Persistent);
-            _receiveMessagePool = new NativeArray<MessageStruct>(ReceiveMessagePoolSize, Allocator.Persistent);
-            _sendPoolHead = _sendPoolTail = _receivePoolHead = _receivePoolTail = 0;
 
             switch (NetworkPipelineType)
             {
@@ -151,6 +162,12 @@ namespace T2G.UnityAdapter
                     _networkpipeline = NetworkPipeline.Null;
                     break;
             }
+
+            _connections = new NativeArray<NetworkConnection>(1, Allocator.Persistent);
+            _connections[0] = default(NetworkConnection);
+            _sendMessagePool = new NativeArray<MessageStruct>(SendMessagePoolSize, Allocator.Persistent);
+            _receiveMessagePool = new NativeArray<MessageStruct>(ReceiveMessagePoolSize, Allocator.Persistent);
+            _sendPoolHead = _sendPoolTail = _receivePoolHead = _receivePoolTail = 0;
         }
 
         protected virtual void Dispose()
@@ -170,14 +187,15 @@ namespace T2G.UnityAdapter
             _networkDriver.Dispose();
         }
 
-        public bool IsActive => _networkDriver.IsCreated;
+        public bool IsActive => (_networkDriver.IsCreated && _networkDriver.Listening);
 
         public bool IsSendPoolEmpty => (_sendPoolHead == _sendPoolTail);
         public bool IsReceivePoolEmpty => (_receivePoolHead == _receivePoolTail);
         public bool IsReceivingPoolFull => (
             (_receivePoolTail > 0 && _receivePoolHead == _receivePoolTail - 1)
             || (_receivePoolTail == 0 && _receivePoolHead == _receiveMessagePool.Length - 1));
-        public bool IsConnected => (_connections.Length > 0 && _connections[0].IsCreated);
+        public bool IsConnected => (_networkDriver.IsCreated && 
+            _connections != null && _connections.IsCreated && _connections.Length > 0 && _connections[0].IsCreated);
 
         public bool SendMessage(MessageStruct messageData)
         {
