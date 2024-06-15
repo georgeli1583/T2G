@@ -42,7 +42,7 @@ namespace T2G.UnityAdapter
 
         protected override void Dispose()
         {
-            if(_connections != null && _connections.Length > 0 && _connections[0] != null && _connections[0].IsCreated)
+            if(IsConnected)
             {
                 Disconnect();
             }
@@ -135,6 +135,8 @@ namespace T2G.UnityAdapter
                 _jobHandle = _networkDriver.ScheduleUpdate();
                 _jobHandle = job.Schedule(_jobHandle);
             }
+
+            ProcessPooledReceivedMessage();
         }
 
 
@@ -180,6 +182,5 @@ namespace T2G.UnityAdapter
                 }
             }
         }
-
     }
 }

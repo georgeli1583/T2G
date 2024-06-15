@@ -78,8 +78,13 @@ public class ConsoleController : MonoBehaviour
     private void Awake()
     {
         _instance = this;
-        CommunicatorClient.Instance.OnFailedToConnectToServer += HandleOnFailedConnectToServer;
-        CommunicatorClient.Instance.OnConnectedToServer += HandleOnConnectedToServer;
+
+        Settings.Load();
+
+        CommunicatorClient communicatorClient = CommunicatorClient.Instance;
+        communicatorClient.OnFailedToConnectToServer += HandleOnFailedConnectToServer;
+        communicatorClient.OnConnectedToServer += HandleOnConnectedToServer;
+        communicatorClient.OnReceivedMessage += HandleOnReceivedMessage;
     }
 
     void Start()
@@ -98,9 +103,11 @@ public class ConsoleController : MonoBehaviour
 
     private void OnDestroy()
     {
-        CommunicatorClient.Instance.OnFailedToConnectToServer -= HandleOnFailedConnectToServer;
-        CommunicatorClient.Instance.OnConnectedToServer -= HandleOnConnectedToServer;
-        CommunicatorClient.Instance.Disconnect();
+        CommunicatorClient communicatorClient = CommunicatorClient.Instance;
+        communicatorClient.OnReceivedMessage += HandleOnReceivedMessage;
+        communicatorClient.OnFailedToConnectToServer -= HandleOnFailedConnectToServer;
+        communicatorClient.OnConnectedToServer -= HandleOnConnectedToServer;
+        communicatorClient.Disconnect();
 
         _CommandOptions.onValueChanged.RemoveAllListeners();
         _InputMessage.onSubmit.RemoveAllListeners();
@@ -332,12 +339,21 @@ public class ConsoleController : MonoBehaviour
         WriteConsoleMessage(eSender.Error, "Failed to connect to the server!");
     }
 
+    void HandleOnReceivedMessage(string message)
+    {
+        WriteConsoleMessage(eSender.System, message);
+        //Client received message. Process it ...
+        //Assistant may want to handle this callback as well
+        //...
+
+    }
+
     void HandleOnConnectedToServer()
     {
         MessageStruct msgData = new MessageStruct
         {
             Type = eMessageType.SettingsData,
-            Message = Settings.ToJson()
+            Message = Settings.ToJson(false)  
         };
         CommunicatorClient.Instance.SendMessage(msgData);
     }

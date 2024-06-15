@@ -22,37 +22,39 @@ namespace T2G.UnityAdapter
         [InitializeOnLoadMethod]
         public static void InitializeOnLoad()
         {
-            CommunicatorServer.OnServerStarted += () =>
+            CommunicatorServer communicatorServer = CommunicatorServer.Instance;
+
+            communicatorServer.OnServerStarted += () =>
             {
                 _text += "\n System> Server started.";
             };
 
-            CommunicatorServer.AfterShutdownServer += () =>
+            communicatorServer.AfterShutdownServer += () =>
             {
                 _text += "\n System> Server was shut down.";
             };
 
-            CommunicatorServer.OnFailedToStartServer += () => 
+            communicatorServer.OnFailedToStartServer += () => 
             {
                 _text += "\n System> Failed to start litsening server!";
             };
 
-            CommunicatorServer.OnClientConnected += () =>
+            communicatorServer.OnClientConnected += () =>
             {
                 _text += "\n System> Client was connected!";
             };
 
-            CommunicatorServer.OnClientDisconnected += () =>
+            communicatorServer.OnClientDisconnected += () =>
             {
                 _text += "\n System> Client was disconnected!";
             };
 
-            CommunicatorServer.OnReceivedMessage += (message) =>
+            communicatorServer.OnReceivedMessage += (message) =>
             {
                 _text += "\n Received> " + message;
             };
 
-            CommunicatorServer.OnSentMessage += (message) =>
+            communicatorServer.OnSentMessage += (message) =>
             {
                 _text += "\n Sent> " + message;
             };

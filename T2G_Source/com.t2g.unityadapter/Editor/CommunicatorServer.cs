@@ -11,14 +11,14 @@ namespace T2G.UnityAdapter
 {
     public class CommunicatorServer : Communicator
     {
-        public static Action OnServerStarted;
-        public static Action OnFailedToStartServer;
-        public static Action OnClientConnected;
-        public static Action BeforeDisconnectClient;
-        public static Action AfterDisconnectClient;
-        public static Action OnClientDisconnected;
-        public static Action BeforeShutdownServer;
-        public static Action AfterShutdownServer;
+        public Action OnServerStarted;
+        public Action OnFailedToStartServer;
+        public Action OnClientConnected;
+        public Action BeforeDisconnectClient;
+        public Action AfterDisconnectClient;
+        public Action OnClientDisconnected;
+        public Action BeforeShutdownServer;
+        public Action AfterShutdownServer;
 
         static CommunicatorServer _instance = null;
         public static CommunicatorServer Instance
@@ -122,13 +122,9 @@ namespace T2G.UnityAdapter
                 };
                 _jobHandle = sendReceiveJob.Schedule(_jobHandle);
                 _jobHandle.Complete();
-
-                //Uncommend this block if "if (command == NetworkEvent.Type.Disconnect)" doesn't happen
-                //if (!IsConnected)
-                //{
-                //    OnClientDisconnected?.Invoke();
-                //}
             }
+
+            ProcessPooledReceivedMessage();
         }
 
         struct ServerConnectionJob : IJob
@@ -176,18 +172,17 @@ namespace T2G.UnityAdapter
                         switch(receivedMessage.Type)
                         {
                             case eMessageType.SettingsData:
-                                 Settings.FromJson(receivedMessage.Message.ToString());
+                                 Settings.FromJson(receivedMessage.Message.ToString(), false);
                                 break;
                             default:
                                 comm.PoolReceivedMessage(receivedMessage);
                                 break;
                         }
-                        
                     }
                     else if (command == NetworkEvent.Type.Disconnect)
                     {
                         Connections[0] = default;
-                        OnClientDisconnected?.Invoke();
+                        CommunicatorServer.Instance.OnClientDisconnected?.Invoke();
                     }
                 }
 

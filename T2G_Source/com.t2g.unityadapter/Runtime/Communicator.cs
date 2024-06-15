@@ -52,9 +52,12 @@ namespace T2G.UnityAdapter
         public static string User;
         public static string Assistant;
 
-        public static string ToJson()
+        public static string ToJson(bool reload = true)
         {
-            Load();
+            if (reload)
+            {
+                Load();
+            }
             JSONObject jsonObj = new JSONObject();
             jsonObj.Add("UnityEditorPath", UnityEditorPath);
             jsonObj.Add("RecoursePath", RecoursePath);
@@ -63,14 +66,17 @@ namespace T2G.UnityAdapter
             return jsonObj.ToString();
         }
 
-        public static void FromJson(string jsonData)
+        public static void FromJson(string jsonData, bool save = true)
         {
             JSONObject jsonObj = (JSONObject)JSON.Parse(jsonData);
             UnityEditorPath = jsonObj["UnityEditorPath"];
             RecoursePath = jsonObj["RecoursePath"];
             User = jsonObj["User"];
             Assistant = jsonObj["Assistant"];
-            Save();
+            if (save)
+            {
+                Save();
+            }
         }
 
         public static void Load()
@@ -100,9 +106,9 @@ namespace T2G.UnityAdapter
         public readonly int MaxMessageLength = 4096;
 
 
-        static public Action<string> OnSystemError;
-        static public Action<string> OnSentMessage;
-        static public Action<string> OnReceivedMessage;
+        public Action<string> OnSystemError;
+        public Action<string> OnSentMessage;
+        public Action<string> OnReceivedMessage;
 
         public enum eNetworkPipeline
         {
@@ -242,17 +248,11 @@ namespace T2G.UnityAdapter
             {
                 _receivePoolHead = 0;
             }
-            OnReceivedMessage?.Invoke(messageData.Message.ToString());
             return true;
         }
 
         protected virtual void SendPooledMessege()
         {
-            if(!IsConnected)
-            {
-                return;
-            }
-
             if (_sendPoolHead != _sendPoolTail)
             {
                 var sendMessage = _sendMessagePool[_sendPoolTail++];
@@ -264,10 +264,20 @@ namespace T2G.UnityAdapter
                 if (sendMessage.Message.Length <= MaxMessageLength)
                 {
                     _networkDriver.BeginSend(_networkpipeline, _connections[0], out var writer);
+                    writer.WriteInt((int)(sendMessage.Type));
                     writer.WriteFixedString4096(sendMessage.Message);
                     _networkDriver.EndSend(writer);
                     OnSentMessage?.Invoke(sendMessage.Message.ToString());
                 }
+            }
+        }
+
+        protected void ProcessPooledReceivedMessage()
+        {
+            MessageStruct messageData;
+            if(GetReceivedMessage(out messageData))
+            {
+                OnReceivedMessage?.Invoke(messageData.Message.ToString());
             }
         }
     }

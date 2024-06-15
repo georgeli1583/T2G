@@ -16,17 +16,17 @@ public class SettingsPanel : MonoBehaviour
     {
         Settings.Load();
         _UnityEditorPath.text = Settings.UnityEditorPath;
-        _UserName.text = Settings.RecoursePath;
-        _AssistantName.text = Settings.User;
-        _AssetsPath.text = Settings.Assistant;
+        _AssetsPath.text = Settings.RecoursePath;
+        _UserName.text = Settings.User;
+        _AssistantName.text = Settings.Assistant;
     }
 
     public void OnSave()
     {
         Settings.UnityEditorPath = _UnityEditorPath.text;
-        Settings.RecoursePath = _UserName.text;
-        Settings.User = _AssistantName.text;
-        Settings.Assistant = _AssetsPath.text;
+        Settings.RecoursePath = _AssetsPath.text;
+        Settings.User = _UserName.text;
+        Settings.Assistant = _AssistantName.text;
         Settings.Save();
     }
 }
