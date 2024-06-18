@@ -18,8 +18,7 @@ public class CommandSystem : MonoBehaviour
         _commandsRegistry.Add(CmdInitProject.CommandKey.ToLower(), typeof(CmdInitProject));
         _commandsRegistry.Add(CmdOpenProject.CommandKey.ToLower(), typeof(CmdOpenProject));
         _commandsRegistry.Add(CmdConnect.CommandKey.ToLower(), typeof(CmdConnect));
-
-        //_commandsRegistry.Add(DisconnectCommand.CommandKey.ToLower(), typeof(DisconnectCommand));
+        _commandsRegistry.Add(CmdDisconnect.CommandKey.ToLower(), typeof(CmdDisconnect));
         //_commandsRegistry.Add(BeginGameDescCommand.CommandKey.ToLower(), typeof(BeginGameDescCommand));
         //_commandsRegistry.Add(SaveGameDescCommand.CommandKey.ToLower(), typeof(SaveGameDescCommand));
         //_commandsRegistry.Add(EndGameDescCommand.CommandKey.ToLower(), typeof(EndGameDescCommand));
