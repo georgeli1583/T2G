@@ -1,6 +1,7 @@
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Threading;
 using UnityEngine;
 
 public class CmdOpenProject : Command
@@ -23,8 +24,6 @@ public class CmdOpenProject : Command
         if (args.Length < 1)
         {
             string defaultPath = ConsoleController.Instance.ProjectPathName;
-            int startIdx = defaultPath.IndexOf("[") + 1;
-            defaultPath = defaultPath.Substring(startIdx, defaultPath.IndexOf("]") - startIdx);
 
              if (string.IsNullOrWhiteSpace(defaultPath))
             {
@@ -33,7 +32,17 @@ public class CmdOpenProject : Command
             }
             else
             {
-                _projectPathName = defaultPath;
+                int startIdx = defaultPath.IndexOf("[") + 1;
+                int endIdx = defaultPath.IndexOf("]");
+                if (startIdx > 1 && endIdx > startIdx)
+                {
+                    _projectPathName = defaultPath.Substring(startIdx, endIdx -startIdx);
+                }
+                else
+                {
+                    OnExecutionCompleted?.Invoke(false, ConsoleController.eSender.Error, "Invalid project path!");
+                    return false;
+                }
             }
         }
         else
@@ -54,11 +63,43 @@ public class CmdOpenProject : Command
         _process.Exited += _eventHandler;
         _process.StartInfo.FileName = unityEditorPath;
         _process.StartInfo.Arguments = arguments;
-        _process.Start();
-        _process.WaitForInputIdle();
-        
-        OnExecutionCompleted?.Invoke(true, ConsoleController.eSender.System, $"Project was opened!");
+
+        try
+        {
+            OnExecutionCompleted?.Invoke(true, ConsoleController.eSender.System, $"Openning ...");
+            _process.Start();
+            _process.WaitForInputIdle();
+            Thread thread = new Thread(() => { DelayAndShowOpendedMessage(OnExecutionCompleted, 5000); });
+            thread.Start();
+        }
+        catch (Exception e)
+        {
+            OnExecutionCompleted?.Invoke(true, ConsoleController.eSender.Error, e.Message);
+            _process.Close();
+        }
+
         return true;
+    }
+
+    static void DelayAndShowOpendedMessage(Action<bool, ConsoleController.eSender, string> OnExecutionCompleted, int delayMiniseconds)
+    {
+        Thread.Sleep(delayMiniseconds);
+        OnExecutionCompleted?.Invoke(true, ConsoleController.eSender.System, "Project is openned!");
+    }
+
+    void ProcessExitedHandler(object sender, EventArgs args)
+    {
+        if (_process.ExitCode != 0)
+        {
+            OnExecutionCompleted?.Invoke(false, ConsoleController.eSender.Error,
+                $"Failed! Exit Code: {_process.ExitCode}");
+        }
+        else
+        {
+            OnExecutionCompleted?.Invoke(true, ConsoleController.eSender.System, $"Project is closed.");
+        }
+        _process.Close();
+        _process.Exited -= _eventHandler;
     }
 
     public override string GetKey()
@@ -70,16 +111,5 @@ public class CmdOpenProject : Command
     {
         string[] args = { _projectPathName };
         return args;
-    }
-
-    void ProcessExitedHandler(object sender, EventArgs args)
-    {
-        if (_process.ExitCode != 0)
-        {
-            OnExecutionCompleted?.Invoke(false, ConsoleController.eSender.Error,
-                $"Failed! Exit Code: {_process.ExitCode}");
-        }
-        _process.Close();
-        _process.Exited -= _eventHandler;
     }
 }

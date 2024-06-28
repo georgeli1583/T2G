@@ -1,16 +1,12 @@
 using UnityEngine;
+using System.Collections.Generic;
+using SimpleJSON;
 
 public class Assistant : MonoBehaviour
 {
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
-        
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
+        Dictionary<string, JSONNode> gameDesc = new Dictionary<string, JSONNode>();
+        JsonParser.ParseGameDesc(JsonParser.JsonSample, ref gameDesc);   
     }
 }

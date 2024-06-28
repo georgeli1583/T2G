@@ -49,6 +49,8 @@ public class ConsoleController : MonoBehaviour
     int _inputHistoryIndex = -1;
     readonly int _maxInputHistorySize = 32;
 
+    List<string> _messagePool = new List<string>();
+
     bool IsBusy
     {
         set
@@ -140,6 +142,15 @@ public class ConsoleController : MonoBehaviour
                 }
             }
         }
+
+        if (_messagePool.Count > 0)
+        {
+            foreach (string message in _messagePool)
+            {
+                _ConsoleDisplay.text += message;
+            }
+            _messagePool.Clear();
+        }
     }
 
     void ResizeConsole()
@@ -220,7 +231,7 @@ public class ConsoleController : MonoBehaviour
                 break;
         }
         string textColor = _senderTextColors[(int)sender];
-        _ConsoleDisplay.text += $"\n<color={textColor}>{senderPrompt}> {message}</color>";
+        _messagePool.Add($"\n<color={textColor}>{senderPrompt}> {message}</color>");
     }
 
     public void OnInputEnds(string inputString)
