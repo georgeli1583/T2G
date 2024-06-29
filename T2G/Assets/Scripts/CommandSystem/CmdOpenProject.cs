@@ -57,49 +57,43 @@ public class CmdOpenProject : Command
         }
 
         var arguments = $"-projectPath {_projectPathName}";
-        _eventHandler = new EventHandler(ProcessExitedHandler);
-        _process = new Process();
-        _process.EnableRaisingEvents = true;
-        _process.Exited += _eventHandler;
-        _process.StartInfo.FileName = unityEditorPath;
-        _process.StartInfo.Arguments = arguments;
+
+        OnExecutionCompleted?.Invoke(true, ConsoleController.eSender.System, $"Openning ...");
+        Thread thread = new Thread(() => StartOpenProjectThread(arguments, unityEditorPath, OnExecutionCompleted));
+        thread.Start();
+        Thread delayThread = new Thread(()=> DelayAndShowOpendedMessage(OnExecutionCompleted, 5000));
+        delayThread.Start();
+        return true;
+    }
+
+    static void StartOpenProjectThread(string args, string unityEditorPath, Action<bool, ConsoleController.eSender, string> OnExecutionCompleted)
+    {
+        Process process = new Process();
+        process.StartInfo.FileName = unityEditorPath;
+        process.StartInfo.Arguments = args;
 
         try
         {
-            OnExecutionCompleted?.Invoke(true, ConsoleController.eSender.System, $"Openning ...");
-            _process.Start();
-            _process.WaitForInputIdle();
-            Thread thread = new Thread(() => { DelayAndShowOpendedMessage(OnExecutionCompleted, 5000); });
-            thread.Start();
+
+            process.Start();
+            process.WaitForExit();
         }
         catch (Exception e)
         {
             OnExecutionCompleted?.Invoke(true, ConsoleController.eSender.Error, e.Message);
-            _process.Close();
+            process.Close();
         }
-
-        return true;
+        finally
+        {
+            process.Close();
+            OnExecutionCompleted?.Invoke(true, ConsoleController.eSender.System, $"Project is closed.");
+        }
     }
 
     static void DelayAndShowOpendedMessage(Action<bool, ConsoleController.eSender, string> OnExecutionCompleted, int delayMiniseconds)
     {
         Thread.Sleep(delayMiniseconds);
         OnExecutionCompleted?.Invoke(true, ConsoleController.eSender.System, "Project is openned!");
-    }
-
-    void ProcessExitedHandler(object sender, EventArgs args)
-    {
-        if (_process.ExitCode != 0)
-        {
-            OnExecutionCompleted?.Invoke(false, ConsoleController.eSender.Error,
-                $"Failed! Exit Code: {_process.ExitCode}");
-        }
-        else
-        {
-            OnExecutionCompleted?.Invoke(true, ConsoleController.eSender.System, $"Project is closed.");
-        }
-        _process.Close();
-        _process.Exited -= _eventHandler;
     }
 
     public override string GetKey()

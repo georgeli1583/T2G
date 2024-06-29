@@ -1,0 +1,107 @@
+{
+  "Name" : "GameDesc",
+  "VersionNumber": 0,
+  "MinorVersionNumber": 1,
+  "Author": "George Li",
+  "CreatedDateTime": "",
+  "LastEditedDateTime": "",
+  "GameProfile": {
+    "Title": "Super Hero",
+    "Genre": "FSP",
+    "ArtStyle": "Toon"
+  },
+  "GameProject": {
+    "Engine": "Unity",
+    "Path": "C:/T2G_Projects",
+    "ProjectName": "SuperHero",
+    "Assets": [
+      "",
+      ""
+    ]
+  },
+  "Spaces": [
+    {
+      "Name": "Battlefield1",
+      "SpaceRoot": [
+        {
+          "Name": "Root",
+          "Children": [
+            {
+              "Name": "MainCamera",
+              "Location": [
+                0,
+                0,
+                5
+              ],
+              "CameraAttributes": [
+                {
+                  "Type": "perspective",
+                  "HorizontalFOV": 45,
+                  "LookAt": [
+                    0,
+                    0,
+                    0
+                  ]
+                }
+              ],
+              "Controller": "ThirdPersonFPS"
+            },
+            {
+              "Name": "SunLight",
+              "Type": "Directional",
+              "Rotation": [
+                45,
+                0,
+                0
+              ],
+              "Color": [
+                1,
+                1,
+                1
+              ],
+              "Intensity": 1
+            },
+            {
+              "Name": "Player",
+              "Children": [],
+              "Scale": [
+                1,
+                1,
+                1
+              ],
+              "Location": [
+                0,
+                0,
+                0
+              ],
+              "Rotation": [
+                0,
+                0,
+                0
+              ]
+            }
+          ]
+        }
+      ],
+      "TimeoutSeconds": 0,
+      "Goal": {
+        "Type": "",
+        "SubGoals": [
+          {
+            "Type": ""
+          },
+          {
+            "Type": ""
+          }
+        ]
+      },
+      "UI": {
+        "HUD": "",
+        "PopupMenu": ""
+      },
+      "Multiplayer": {
+        "MaximumPlayerNumber": 1
+      }
+    }
+  ]
+}

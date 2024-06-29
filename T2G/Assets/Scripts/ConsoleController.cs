@@ -273,7 +273,10 @@ public class ConsoleController : MonoBehaviour
         }
         else  //process a prompt
         {
-            
+            SimAssisant.Instance.ProcessPrompt(inputStr, (responseMessage) =>
+            {
+                WriteConsoleMessage(eSender.Assistant, responseMessage);
+            });
         }
 
         //Clear input
