@@ -22,6 +22,26 @@ public class GameDesc
     {
         CreatedDateTime = LastUpdatedDateTime = DateTime.Now;
     }
+
+    string Jesonize()
+    {
+        return string.Empty;
+    }
+
+    void Deserialize(string json)
+    {
+
+    }
+
+    public void Save()
+    {
+
+    }
+
+    public void Load(string gameDescName)
+    {
+
+    }
 }
 
 public class GameProfile

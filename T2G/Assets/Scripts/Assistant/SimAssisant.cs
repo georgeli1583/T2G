@@ -14,8 +14,8 @@ public class SimAssisant : MonoBehaviour
     string[] _prompts = { 
         "hello",
         "hi",
-        "create a new game",
-        "change game project information and regenerate"
+        "create make a new game",
+        "change game project information regenerate"
     };
 
     string[] _responses = {
