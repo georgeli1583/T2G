@@ -15,12 +15,12 @@ public class SimAssisant : MonoBehaviour
         "hello",
         "hi",
         "create make a new game",
-        "change game project information regenerate"
+        "modify change game"
     };
 
     string[] _responses = {
-        "Hi, how can I assist you to make a game?",
-        "Hello, I am glad to help. What can I do for you?",
+        "Hi {user}, I am {assistant}, your game development assistant. What can I do for you?",
+        "Hello {user}, I am {assistant} who will assist you to develop games. What can I do for you?",
         "Okay! I need some initial information about the game, please fill up the Game Project Information form.",
         "Okay! Which game description (GameDesc) do you want to change?"
     };
@@ -59,7 +59,7 @@ public class SimAssisant : MonoBehaviour
         string responseMessage = "Sorry, I don't understand what you mean! Could you provide more specific infromation?";
 
         _matchedPrompts.Clear();
-        if(Utilities.FindTopMatches(prompt, _prompts, 3, 0.6f, ref _matchedPrompts))
+        if(Utilities.FindTopMatches(prompt, _prompts, 3, 0.3f, ref _matchedPrompts))
         {
             int count = _matchedPrompts.Count;
             if (count > 1)

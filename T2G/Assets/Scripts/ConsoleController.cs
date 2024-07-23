@@ -275,6 +275,8 @@ public class ConsoleController : MonoBehaviour
         {
             SimAssisant.Instance.ProcessPrompt(inputStr, (responseMessage) =>
             {
+                responseMessage = responseMessage.Replace("{user}", Settings.User);
+                responseMessage = responseMessage.Replace("{assistant}", Settings.Assistant);
                 WriteConsoleMessage(eSender.Assistant, responseMessage);
             });
         }
