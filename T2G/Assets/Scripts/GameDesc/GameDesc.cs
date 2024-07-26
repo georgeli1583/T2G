@@ -2,16 +2,14 @@ using UnityEngine;
 using SimpleJSON;
 using System.Collections.Generic;
 using System;
+using T2G.UnityAdapter;
 
-
-public class GameDesc
+public class GameDesc : System.Object
 {
     public string Name = "Default Game Description";
     public int VersionNumber = 0;
     public int MinorVersionNumber = 1;
     public string Author;
-    public DateTime CreatedDateTime;
-    public DateTime LastUpdatedDateTime;
     public GameProfile GameProfile = new GameProfile();
     public GameProject Project = new GameProject();
     public List<Space> Spaces = new List<Space>();
@@ -20,27 +18,7 @@ public class GameDesc
 
     public GameDesc()
     {
-        CreatedDateTime = LastUpdatedDateTime = DateTime.Now;
-    }
-
-    string Jesonize()
-    {
-        return string.Empty;
-    }
-
-    void Deserialize(string json)
-    {
-
-    }
-
-    public void Save()
-    {
-
-    }
-
-    public void Load(string gameDescName)
-    {
-
+        Author = Settings.User;
     }
 }
 

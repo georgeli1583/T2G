@@ -156,10 +156,10 @@ public class ConsoleController : MonoBehaviour
     void ResizeConsole()
     {
         PlayerPrefs.SetInt(k_ConsoleSizeIndex, _consoleSizeIndex);
-        _rectTransform.sizeDelta = new Vector2(_rectTransform.sizeDelta.x,
-            _consoleSizes[_consoleSizeIndex]);
+        _rectTransform.sizeDelta = new Vector2(_rectTransform.sizeDelta.x, _consoleSizes[_consoleSizeIndex]);
         _ExpandButton.interactable = (_consoleSizeIndex < _consoleSizes.Length - 1);
         _ShrinkButton.interactable = (_consoleSizeIndex > 0);
+        SimAssistant.Instance.OnDestopPanelResized(_rectTransform.sizeDelta.y);
     }
 
     public void ExpandConsole()
@@ -273,7 +273,7 @@ public class ConsoleController : MonoBehaviour
         }
         else  //process a prompt
         {
-            SimAssisant.Instance.ProcessPrompt(inputStr, (responseMessage) =>
+            SimAssistant.Instance.ProcessPrompt(inputStr, (responseMessage) =>
             {
                 responseMessage = responseMessage.Replace("{user}", Settings.User);
                 responseMessage = responseMessage.Replace("{assistant}", Settings.Assistant);

@@ -8,8 +8,6 @@ public class GameDescForm : MonoBehaviour
     [SerializeField] TMP_InputField _Version;
     [SerializeField] TMP_InputField _MinorVersion;
     [SerializeField] TMP_InputField _Author;
-    [SerializeField] TMP_InputField _CreatedDateTime;
-    [SerializeField] TMP_InputField _LastEditedDateTime;
 
     [SerializeField] TMP_InputField _Title;
     [SerializeField] TMP_Dropdown _Genre;
@@ -30,8 +28,6 @@ public class GameDescForm : MonoBehaviour
         _Version.text = GameDesc.VersionNumber.ToString();
         _MinorVersion.text = GameDesc.MinorVersionNumber.ToString();
         _Author.text = GameDesc.Author;
-        _CreatedDateTime.text = GameDesc.CreatedDateTime.ToLongDateString();
-        _LastEditedDateTime.text = GameDesc.LastUpdatedDateTime.ToLongDateString();
     }
 
     public void OnSelectPath()

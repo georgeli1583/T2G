@@ -3,8 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 
-
-public class SimAssisant : MonoBehaviour
+public class SimAssistant : MonoBehaviour
 {
     [SerializeField] GameObject _AssistantDialogs;
     [SerializeField] GameDescForm _GameDescForm;
@@ -14,15 +13,17 @@ public class SimAssisant : MonoBehaviour
     string[] _prompts = { 
         "hello",
         "hi",
-        "create make a new game",
-        "modify change game"
+        "create make new game",
+        "modify change game",
+        "Generate game"
     };
 
     string[] _responses = {
         "Hi {user}, I am {assistant}, your game development assistant. What can I do for you?",
         "Hello {user}, I am {assistant} who will assist you to develop games. What can I do for you?",
         "Okay! I need some initial information about the game, please fill up the Game Project Information form.",
-        "Okay! Which game description (GameDesc) do you want to change?"
+        "Okay, Which game description (GameDesc) do you want to change?",
+        "Okay, Which game description (GameDesc) do you want to use to generate the new game project?"
     };
 
   
@@ -31,8 +32,8 @@ public class SimAssisant : MonoBehaviour
 
     List<string> _matchedPrompts = new List<string>();
 
-    static SimAssisant _instance = null;
-    public static SimAssisant Instance => _instance;
+    static SimAssistant _instance = null;
+    public static SimAssistant Instance => _instance;
 
     private void Awake()
     {
@@ -42,9 +43,11 @@ public class SimAssisant : MonoBehaviour
         _promptResponeMap.Add(_prompts[1], new List<int>(new int[] { 0, 1 }));
         _promptResponeMap.Add(_prompts[2], new List<int>(new int[] { 2 }));
         _promptResponeMap.Add(_prompts[3], new List<int>(new int[] { 3 }));
+        _promptResponeMap.Add(_prompts[4], new List<int>(new int[] { 4 }));
 
         _responseActionMap.Add(_responses[2], CollectGameProjectInformation);
         _responseActionMap.Add(_responses[3], OpenGameDescForEditing);
+        _responseActionMap.Add(_responses[4], GenerateGameFromGameDesc);
     }
 
     public void ProcessPrompt(string prompt, Action<string> callBack)
@@ -106,6 +109,11 @@ public class SimAssisant : MonoBehaviour
         //Open
     }
 
+    void GenerateGameFromGameDesc(string responseMessage)
+    {
+
+    }
+
     public void OnGameDescFormCancel()
     {
         _GameDescForm.gameObject.SetActive(false);
@@ -114,8 +122,21 @@ public class SimAssisant : MonoBehaviour
 
     public void OnGameDescFormOk()
     {
+        //Verify and ask questions to make it up
         //...
+
+
+        //Save it
+        JsonParser.JsonifyAndSave(_GameDescForm.GameDesc);
+
+        //Hide the form
         _GameDescForm.gameObject.SetActive(false);
         _AssistantDialogs.SetActive(false);
+    }
+
+    public void OnDestopPanelResized(float desktopHeight)
+    {
+        var rectTransform = _AssistantDialogs.GetComponent<RectTransform>();
+        rectTransform.offsetMin = new Vector2(0.0f, desktopHeight);
     }
 }
