@@ -13,9 +13,11 @@ public class SimAssistant : MonoBehaviour
     string[] _prompts = { 
         "hello",
         "hi",
-        "create make new game",
+        "create new game",
+        "make new game",
         "modify change game",
-        "Generate game"
+        "generate game",
+        "delete gamedesc"
     };
 
     string[] _responses = {
@@ -23,7 +25,8 @@ public class SimAssistant : MonoBehaviour
         "Hello {user}, I am {assistant} who will assist you to develop games. What can I do for you?",
         "Okay! I need some initial information about the game, please fill up the Game Project Information form.",
         "Okay, Which game description (GameDesc) do you want to change?",
-        "Okay, Which game description (GameDesc) do you want to use to generate the new game project?"
+        "Okay, Which game description (GameDesc) do you want to use to generate the new game project?",
+        "Okay, Which game description (GameDesc) do you want to delete?",
     };
 
   
@@ -42,12 +45,15 @@ public class SimAssistant : MonoBehaviour
         _promptResponeMap.Add(_prompts[0], new List<int>(new int[] { 0, 1 }));
         _promptResponeMap.Add(_prompts[1], new List<int>(new int[] { 0, 1 }));
         _promptResponeMap.Add(_prompts[2], new List<int>(new int[] { 2 }));
-        _promptResponeMap.Add(_prompts[3], new List<int>(new int[] { 3 }));
-        _promptResponeMap.Add(_prompts[4], new List<int>(new int[] { 4 }));
+        _promptResponeMap.Add(_prompts[3], new List<int>(new int[] { 2 }));
+        _promptResponeMap.Add(_prompts[4], new List<int>(new int[] { 3 }));
+        _promptResponeMap.Add(_prompts[5], new List<int>(new int[] { 4 }));
+        _promptResponeMap.Add(_prompts[5], new List<int>(new int[] { 5 }));
 
         _responseActionMap.Add(_responses[2], CollectGameProjectInformation);
         _responseActionMap.Add(_responses[3], OpenGameDescForEditing);
         _responseActionMap.Add(_responses[4], GenerateGameFromGameDesc);
+        _responseActionMap.Add(_responses[5], DeleteGameDesc);
     }
 
     public void ProcessPrompt(string prompt, Action<string> callBack)
@@ -62,7 +68,7 @@ public class SimAssistant : MonoBehaviour
         string responseMessage = "Sorry, I don't understand what you mean! Could you provide more specific infromation?";
 
         _matchedPrompts.Clear();
-        if(Utilities.FindTopMatches(prompt, _prompts, 3, 0.3f, ref _matchedPrompts))
+        if(Utilities.FindTopMatches(prompt, _prompts, 3, 0.5f, ref _matchedPrompts))
         {
             int count = _matchedPrompts.Count;
             if (count > 1)
@@ -109,6 +115,11 @@ public class SimAssistant : MonoBehaviour
         //Open
     }
 
+    void DeleteGameDesc(string responseMessage)
+    {
+
+    }
+
     void GenerateGameFromGameDesc(string responseMessage)
     {
 
@@ -127,7 +138,9 @@ public class SimAssistant : MonoBehaviour
 
 
         //Save it
-        JsonParser.JsonifyAndSave(_GameDescForm.GameDesc);
+        JsonParser.SerializeAndSave(_GameDescForm.GameDesc);
+        var gameList = JsonParser.GetGameDescList();
+        var gameDesc = JsonParser.LoadAndDeserialize(gameList[0]);
 
         //Hide the form
         _GameDescForm.gameObject.SetActive(false);

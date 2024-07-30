@@ -52,75 +52,173 @@ public class JsonParser
         }
     }
 
-    public static string JsonifyObject(object obj, JSONObject jsonObject = null)
+    public static JSONObject SerializeObject(object obj)
     {
+        JSONObject jsonObject = null;
         string json = string.Empty;
-        if (jsonObject == null)
+        var objType = obj.GetType();
+        if (objType.IsClass)
         {
             jsonObject = new JSONObject();
+            
+            var fields = objType.GetFields();
+            foreach (var field in fields)
+            {
+                var fieldValue = field.GetValue(obj);
+                if (fieldValue == null)
+                {
+                    jsonObject.Add(field.Name, null);
+                }
+                else if (field.FieldType.IsArray)
+                {
+                    jsonObject.Add(field.Name, SerializeArray(fieldValue));
+                }
+                else if (field.FieldType == typeof(string))
+                {
+                    jsonObject.Add(field.Name, (string)fieldValue);
+                }
+                else if(field.FieldType.IsPrimitive)  //TODO: consider standarize this block  
+                {
+                    if (field.FieldType == typeof(float))
+                    {
+                        jsonObject.Add(field.Name, (float)fieldValue);
+                    }
+                    else if (field.FieldType == typeof(double))
+                    {
+                        jsonObject.Add(field.Name, (double)fieldValue);
+                    }
+                    else if (field.FieldType == typeof(short))
+                    {
+                        jsonObject.Add(field.Name, (short)fieldValue);
+                    }
+                    else if (field.FieldType == typeof(int))
+                    {
+                        jsonObject.Add(field.Name, (int)fieldValue);
+                    }
+                    else if (field.FieldType == typeof(long))
+                    {
+                        jsonObject.Add(field.Name, (long)fieldValue);
+                    }
+                    else if (field.FieldType == typeof(ulong))
+                    {
+                        jsonObject.Add(field.Name, (ulong)fieldValue);
+                    }
+                    else if (field.FieldType == typeof(bool))
+                    {
+                        jsonObject.Add(field.Name, (bool)fieldValue);
+                    }
+                }
+                else if (field.FieldType.IsClass)
+                {
+                    jsonObject.Add(field.Name, SerializeObject(fieldValue));
+                }
+                else
+                {
+                    jsonObject.Add(field.Name, "Unsopported field type");
+                }
+            }
         }
-        var fields = obj.GetType().GetFields();
 
-        foreach (var field in fields)
+        return jsonObject;
+    }
+
+    static JSONArray SerializeArray(object array)
+    {
+        System.Collections.IList list = (System.Collections.IList)array;
+        var elementType = array.GetType().GetElementType();
+        JSONArray arr = new JSONArray();
+
+        for (int i = 0; i < list.Count; ++i)
         {
-            var value = field.GetValue(obj);
-
-            if (value == null)
+            if (elementType == typeof(string))
             {
-                jsonObject.Add(field.Name, null);
+                arr.Add((string)list[i]);
             }
-            else if (field.FieldType == typeof(string))
+            else if (elementType.IsPrimitive)
             {
-                jsonObject.Add(field.Name, (string)value);
+                if (elementType == typeof(float))
+                {
+                    arr.Add((float)list[i]);
+                }
+                else if (elementType == typeof(double))
+                {
+                    arr.Add((double)list[i]);
+                }
+                else if (elementType == typeof(short))
+                {
+                    arr.Add((short)list[i]);
+                }
+                else if (elementType == typeof(int))
+                {
+                    arr.Add((int)list[i]);
+                }
+                else if (elementType == typeof(long))
+                {
+                    arr.Add((long)list[i]);
+                }
+                else if (elementType == typeof(ulong))
+                {
+                    arr.Add((ulong)list[i]);
+                }
+                else if (elementType == typeof(bool))
+                {
+                    arr.Add((bool)list[i]);
+                }
             }
-            else if (field.FieldType == typeof(float))
+            else if (elementType.IsClass)
             {
-                jsonObject.Add(field.Name, (float)value);
-            }
-            else if (field.FieldType == typeof(int))
-            {
-                jsonObject.Add(field.Name, (int)value);
-            }
-            else if (field.FieldType == typeof(bool))
-            {
-                jsonObject.Add(field.Name, (bool)value);
+                arr.Add(SerializeObject(list[i]));
             }
             else
             {
-                JsonifyObject(value, jsonObject);
+                arr.Add(null);
             }
         }
-        return jsonObject.ToString();
+        return arr;
     }
 
 
-    public static bool JsonifyAndSave(GameDesc gameDesc)
+    public static bool SerializeAndSave(GameDesc gameDesc)
     {
-        string json = JsonifyObject(gameDesc);
+        var jsonObj = SerializeObject(gameDesc);
+        string json = jsonObj.ToString();
         var path = Path.Combine(Application.persistentDataPath, gameDesc.Name + ".gamedesc");
         File.WriteAllText(path, json);
         return true;
     }
 
-
-    public static List<string> GetGameDescJsonList()
+    public static List<string> GetGameDescList()
     {
         return new List<string>(Directory.GetFiles(Application.persistentDataPath, "*.gamedesc"));
     }
 
-    public static GameDesc LoadGameDesc(string gameDescName)
+    public static GameDesc LoadAndDeserialize(string gameDescName)
     {
-        //New GameDesc object
-        GameDesc gameDesc = new GameDesc();
+        GameDesc gameDesc = null;
+        var gameDescJson = LoadGameDesc(gameDescName);
+        if(gameDescJson != null)
+        {
+            gameDesc = Deseialialize(gameDescJson);
+        }
+        return gameDesc;
+    }
 
-        //New JSON object
+    public static string LoadGameDesc(string gameDescName)
+    {
         var path = Path.Combine(Application.persistentDataPath, gameDescName + ".gamedesc");
         if (!File.Exists(path))
         {
             return null;
         }
-        var json = File.ReadAllText(path);
-        JSONObject gameDescObj = (JSONObject)JSON.Parse(json);
+        return File.ReadAllText(path);
+    }
+
+    public static GameDesc Deseialialize(string gameDescJson)
+    {
+        //New GameDesc object
+        GameDesc gameDesc = new GameDesc();
+
+        JSONObject gameDescObj = (JSONObject)JSON.Parse(gameDescJson);
 
         //Parse
         ParseJsonObject(ref gameDesc, ref gameDescObj);

@@ -1,11 +1,9 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class SpaceObject
+public class SceneObject
 {
     public string Name;
-    public SpaceObject Parent;
-    public List<SpaceObject> Children = new List<SpaceObject>();
-    
-
+    public SceneObject Parent;
+    public SceneObject[] Children;
 }

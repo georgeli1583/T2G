@@ -1,7 +1,7 @@
 using UnityEngine;
 
-public class Space
+public class Scene
 {
     public string Name;
-    public SpaceObject SpaceRoot = new SpaceObject();
+    public SceneObject SpaceRoot = new SceneObject();
 }

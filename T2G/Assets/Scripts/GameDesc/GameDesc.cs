@@ -6,15 +6,16 @@ using T2G.UnityAdapter;
 
 public class GameDesc : System.Object
 {
-    public string Name = "Default Game Description";
+    public string Name = "My Game";
     public int VersionNumber = 0;
     public int MinorVersionNumber = 1;
     public string Author;
     public GameProfile GameProfile = new GameProfile();
     public GameProject Project = new GameProject();
-    public List<Space> Spaces = new List<Space>();
+    public string[] Scenes = { "Scene1", "Scene2" };
+    public int[] Ints = { 1, 2 };
 
-    public string[] Scenes;
+    public Scene[] Spaces = { new Scene(), new Scene() };
 
     public GameDesc()
     {
@@ -36,3 +37,4 @@ public class GameProject
     public string ProjectName;
     public string Assets;
 }
+
