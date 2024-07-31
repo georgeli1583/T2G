@@ -19,8 +19,9 @@ public class GameDescForm : MonoBehaviour
     [SerializeField] TMP_InputField _Path;
     [SerializeField] TMP_InputField _ProjectName;
 
+    [SerializeField] GameDescList _GameDescList;
 
-    public GameDesc GameDesc;
+    public GameDesc GameDesc = new GameDesc();
 
     private void OnEnable()
     {
@@ -37,5 +38,15 @@ public class GameDescForm : MonoBehaviour
         {
             _Path.text = paths[0];
         }
+    }
+
+    public void OnLoadGameDesc()
+    {
+        _GameDescList.LoadGameDescCallback = (gameDescName) =>
+        {
+            GameDesc = JsonParser.LoadGameDesc(gameDescName);
+            OnEnable();
+        };
+        _GameDescList.gameObject.SetActive(true);
     }
 }

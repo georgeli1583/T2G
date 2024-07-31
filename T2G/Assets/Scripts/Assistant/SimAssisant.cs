@@ -48,7 +48,7 @@ public class SimAssistant : MonoBehaviour
         _promptResponeMap.Add(_prompts[3], new List<int>(new int[] { 2 }));
         _promptResponeMap.Add(_prompts[4], new List<int>(new int[] { 3 }));
         _promptResponeMap.Add(_prompts[5], new List<int>(new int[] { 4 }));
-        _promptResponeMap.Add(_prompts[5], new List<int>(new int[] { 5 }));
+        _promptResponeMap.Add(_prompts[6], new List<int>(new int[] { 5 }));
 
         _responseActionMap.Add(_responses[2], CollectGameProjectInformation);
         _responseActionMap.Add(_responses[3], OpenGameDescForEditing);
@@ -125,6 +125,8 @@ public class SimAssistant : MonoBehaviour
 
     }
 
+
+
     public void OnGameDescFormCancel()
     {
         _GameDescForm.gameObject.SetActive(false);
@@ -133,14 +135,8 @@ public class SimAssistant : MonoBehaviour
 
     public void OnGameDescFormOk()
     {
-        //Verify and ask questions to make it up
-        //...
-
-
         //Save it
         JsonParser.SerializeAndSave(_GameDescForm.GameDesc);
-        var gameList = JsonParser.GetGameDescList();
-        var gameDesc = JsonParser.LoadAndDeserialize(gameList[0]);
 
         //Hide the form
         _GameDescForm.gameObject.SetActive(false);

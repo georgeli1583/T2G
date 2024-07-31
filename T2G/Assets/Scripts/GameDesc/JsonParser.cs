@@ -19,39 +19,6 @@ public class JsonParser
         ""string"": ""Hello World""
     }";
 
-    public static void ParseGameDesc(string gameDescJson, ref Dictionary<string, JSONNode> parsedObject)
-    {
-        JSONNode node = JSON.Parse(gameDescJson);
-        
-        if(node.IsNull)
-        {
-            return;
-        }
-        
-        if(node.IsArray)
-        {
-            JSONArray array = node.AsArray;
-            for(int i = 0; i < array.Count; ++i)
-            {
-                
-            }
-        }
-        else if(node.IsObject)
-        {
-            var obj = node.AsObject;
-            var it = obj.GetEnumerator();
-            it.MoveNext();
-            var key = it.Current.Key;
-            var value = it.Current.Value;
-
-            parsedObject.Add("object", obj);
-        }
-        else
-        {
-            
-        }
-    }
-
     public static JSONObject SerializeObject(object obj)
     {
         JSONObject jsonObject = null;
@@ -189,21 +156,16 @@ public class JsonParser
 
     public static List<string> GetGameDescList()
     {
-        return new List<string>(Directory.GetFiles(Application.persistentDataPath, "*.gamedesc"));
-    }
-
-    public static GameDesc LoadAndDeserialize(string gameDescName)
-    {
-        GameDesc gameDesc = null;
-        var gameDescJson = LoadGameDesc(gameDescName);
-        if(gameDescJson != null)
+        List<string> list = new List<string>();
+        var gameDescs = Directory.GetFiles(Application.persistentDataPath, "*.gamedesc");
+        for(int i = 0; i < gameDescs.Length; ++i)
         {
-            gameDesc = Deseialialize(gameDescJson);
+            list.Add(Path.GetFileNameWithoutExtension(gameDescs[i]));
         }
-        return gameDesc;
+        return list;
     }
 
-    public static string LoadGameDesc(string gameDescName)
+    public static string LoadGameDescJsonString(string gameDescName)
     {
         var path = Path.Combine(Application.persistentDataPath, gameDescName + ".gamedesc");
         if (!File.Exists(path))
@@ -211,6 +173,28 @@ public class JsonParser
             return null;
         }
         return File.ReadAllText(path);
+    }
+
+    public static JSONObject LoadGameDescJsonObject(string gameDescName)
+    {
+        JSONObject jsonObject = null;
+        string json = LoadGameDescJsonString(gameDescName);
+        if(json != null)
+        {
+            jsonObject = JSON.Parse(json).AsObject;
+        }
+        return jsonObject;
+    }
+
+    public static GameDesc LoadGameDesc(string gameDescName)
+    {
+        GameDesc gameDesc = null;
+        var gameDescJsonString = LoadGameDescJsonString(gameDescName);
+        if (gameDescJsonString != null)
+        {
+            gameDesc = Deseialialize(gameDescJsonString);
+        }
+        return gameDesc;
     }
 
     public static GameDesc Deseialialize(string gameDescJson)
@@ -255,5 +239,10 @@ public class JsonParser
                 }
             }
         }
+    }
+
+    public static void DeleteGameDesc(string gameDescName)
+    {
+
     }
 }
