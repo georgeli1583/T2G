@@ -54,10 +54,6 @@ public class JsonParser
                     {
                         jsonObject.Add(field.Name, (double)fieldValue);
                     }
-                    else if (field.FieldType == typeof(short))
-                    {
-                        jsonObject.Add(field.Name, (short)fieldValue);
-                    }
                     else if (field.FieldType == typeof(int))
                     {
                         jsonObject.Add(field.Name, (int)fieldValue);
@@ -110,10 +106,6 @@ public class JsonParser
                 else if (elementType == typeof(double))
                 {
                     arr.Add((double)list[i]);
-                }
-                else if (elementType == typeof(short))
-                {
-                    arr.Add((short)list[i]);
                 }
                 else if (elementType == typeof(int))
                 {
@@ -189,53 +181,72 @@ public class JsonParser
     public static GameDesc LoadGameDesc(string gameDescName)
     {
         GameDesc gameDesc = null;
-        var gameDescJsonString = LoadGameDescJsonString(gameDescName);
-        if (gameDescJsonString != null)
+        var gameDescJsonObj = LoadGameDescJsonObject(gameDescName);
+        if (gameDescJsonObj != null)
         {
-            gameDesc = Deseialialize(gameDescJsonString);
+            gameDesc = Deseialialize(gameDescJsonObj);
         }
         return gameDesc;
     }
 
-    public static GameDesc Deseialialize(string gameDescJson)
+    public static GameDesc Deseialialize(JSONObject gameDescJsonObj)
     {
-        //New GameDesc object
+        
         GameDesc gameDesc = new GameDesc();
 
-        JSONObject gameDescObj = (JSONObject)JSON.Parse(gameDescJson);
-
         //Parse
-        ParseJsonObject(ref gameDesc, ref gameDescObj);
+        DeseialializeObject(gameDesc, gameDescJsonObj);
 
         return gameDesc;
     }
 
-    static void ParseJsonObject(ref GameDesc obj, ref JSONObject jsonObj)
+    static void DeseialializeObject(object obj, JSONObject jsonObj)
     {
         var fields = obj.GetType().GetFields();
         foreach (var field in fields)
         {
             if (jsonObj.HasKey(field.Name))
             {
-                if (field.FieldType == typeof(string))
+                if (field.FieldType.IsArray)
+                {
+                    var fieldArr = Array.CreateInstance(field.FieldType.GetElementType(), );
+                }
+                else if (field.FieldType == typeof(string))
                 {
                     field.SetValue(obj, jsonObj[field.Name]);
                 }
-                else if (field.FieldType == typeof(float))
+                else if (field.FieldType.IsPrimitive)
                 {
-                    field.SetValue(obj, jsonObj[field.Name].AsFloat);
+                    if (field.FieldType == typeof(float))
+                    {
+                        field.SetValue(obj, jsonObj[field.Name].AsFloat);
+                    }
+                    else if (field.FieldType == typeof(double))
+                    {
+                        field.SetValue(obj, jsonObj[field.Name].AsDouble);
+                    }
+                    else if (field.FieldType == typeof(int))
+                    {
+                        field.SetValue(obj, jsonObj[field.Name].AsInt);
+                    }
+                    else if (field.FieldType == typeof(long))
+                    {
+                        field.SetValue(obj, jsonObj[field.Name].AsLong);
+                    }
+                    else if (field.FieldType == typeof(ulong))
+                    {
+                        field.SetValue(obj, jsonObj[field.Name].AsULong);
+                    }
+                    else if (field.FieldType == typeof(bool))
+                    {
+                        field.SetValue(obj, jsonObj[field.Name].AsBool);
+                    }
                 }
-                else if (field.FieldType == typeof(int))
+                else if (field.FieldType.IsClass)
                 {
-                    field.SetValue(obj, jsonObj[field.Name].AsInt);
-                }
-                else if (field.FieldType == typeof(bool))
-                {
-                    field.SetValue(obj, jsonObj[field.Name].AsBool);
-                }
-                else  //Recursively parse an array or an object
-                {
-                    field.SetValue(obj, jsonObj[field.Name].AsObject);
+                    var fieldObject = Activator.CreateInstance(field.FieldType);
+                    DeseialializeObject(fieldObject, jsonObj[field.Name].AsObject);
+                    field.SetValue(obj, fieldObject);
                 }
             }
         }
@@ -243,6 +254,10 @@ public class JsonParser
 
     public static void DeleteGameDesc(string gameDescName)
     {
-
+        var path = Path.Combine(Application.persistentDataPath, gameDescName + ".gamedesc");
+        if(File.Exists(path))
+        {
+            File.Delete(path);
+        }
     }
 }
