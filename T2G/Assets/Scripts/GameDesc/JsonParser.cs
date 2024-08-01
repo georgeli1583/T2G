@@ -191,17 +191,24 @@ public class JsonParser
 
     public static GameDesc Deseialialize(JSONObject gameDescJsonObj)
     {
-        
-        GameDesc gameDesc = new GameDesc();
 
-        //Parse
-        DeseialializeObject(gameDesc, gameDescJsonObj);
+        GameDesc gameDesc = null;
 
+        if (gameDescJsonObj != null)
+        {
+            gameDesc = new GameDesc();
+            DeseialializeObject(gameDesc, gameDescJsonObj);
+        }
         return gameDesc;
     }
 
     static void DeseialializeObject(object obj, JSONObject jsonObj)
     {
+        if(obj == null || jsonObj == null)
+        {
+            return;
+        }
+
         var fields = obj.GetType().GetFields();
         foreach (var field in fields)
         {
@@ -212,12 +219,12 @@ public class JsonParser
                     var elementType = field.FieldType.GetElementType();
                     JSONArray jsonArray = jsonObj[field.Name].AsArray;
                     var fieldArr = Array.CreateInstance(elementType, jsonArray.Count);
-                    field.SetValue(obj, jsonArray);
+                    field.SetValue(obj, fieldArr);
                     for(int i = 0; i < jsonArray.Count; ++i)
                     {
                         if (elementType == typeof(string))
                         {
-                            fieldArr.SetValue(jsonArray[i], i);
+                            fieldArr.SetValue(jsonArray[i].Value, i);
                         }
                         else if(elementType.IsPrimitive)
                         {
@@ -248,15 +255,24 @@ public class JsonParser
                         }
                         else if(elementType.IsClass)
                         {
-                            var elementObj = Activator.CreateInstance(elementType);
-                            fieldArr.SetValue(elementObj, i);
-                            DeseialializeObject(elementObj, jsonArray[i].AsObject);
+                            var jsonElement = jsonArray[i].AsObject;
+                            if (jsonElement != null)
+                            {
+                                var elementObj = Activator.CreateInstance(elementType);
+                                DeseialializeObject(elementObj, jsonElement.AsObject);
+                                fieldArr.SetValue(elementObj, i);
+                            }
+                            else
+                            {
+                                fieldArr.SetValue(null, i);
+                            }
                         }
                     }
                 }
                 else if (field.FieldType == typeof(string))
                 {
-                    field.SetValue(obj, jsonObj[field.Name]);
+                    var strVal = jsonObj[field.Name];
+                    field.SetValue(obj, strVal.Value);
                 }
                 else if (field.FieldType.IsPrimitive)
                 {
@@ -287,9 +303,17 @@ public class JsonParser
                 }
                 else if (field.FieldType.IsClass)
                 {
-                    var fieldObject = Activator.CreateInstance(field.FieldType);
-                    DeseialializeObject(fieldObject, jsonObj[field.Name].AsObject);
-                    field.SetValue(obj, fieldObject);
+                    var jsonObject = jsonObj[field.Name].AsObject;
+                    if (jsonObj != null)
+                    {
+                        var fieldObject = Activator.CreateInstance(field.FieldType);
+                        DeseialializeObject(fieldObject, jsonObj[field.Name].AsObject);
+                        field.SetValue(obj, fieldObject);
+                    }
+                    else
+                    {
+                        field.SetValue(obj, null);
+                    }
                 }
             }
         }

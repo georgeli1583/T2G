@@ -9,34 +9,40 @@ public class GameDescList : MonoBehaviour
     [SerializeField] Transform _Container;
     [SerializeField] GameDescRow _GameDescRow;
 
-    List<string> _gameDescList;
+    List<GameDescRow> _gameDescList = new List<GameDescRow>();
+    
 
     private void OnEnable()
     {
-        _gameDescList = JsonParser.GetGameDescList();
-        for(int i = 0; i < _gameDescList.Count; ++i)
+        foreach (var gamedesc in _gameDescList)
+        {
+            Destroy(gamedesc.gameObject);
+        }
+
+        var gameDescList = JsonParser.GetGameDescList();
+        for(int i = 0; i < gameDescList.Count; ++i)
         {
             var row = Instantiate<GameDescRow>(_GameDescRow, _Container);
+            row.Init(gameDescList[i], LoadGameDesc, DeleteGameDesc);
             row.gameObject.SetActive(true);
-            row.OnInit(_gameDescList[i], i, LoadGameDesc, DeleteGameDesc);
+            _gameDescList.Add(row);
         }
     }
 
     private void OnDisable()
     {
         LoadGameDescCallback = null;
-        _gameDescList = null;
     }
 
-    void LoadGameDesc(int rowIndex)
+    public void LoadGameDesc(string gameDescName)
     {
-        LoadGameDescCallback?.Invoke(_gameDescList[rowIndex]);
+        LoadGameDescCallback?.Invoke(gameDescName);
         gameObject.SetActive(false);
     }
 
-    void DeleteGameDesc(int rowIndex)
+    public void DeleteGameDesc(string gameDescName)
     {
-        JsonParser.DeleteGameDesc(_gameDescList[rowIndex]);
+        JsonParser.DeleteGameDesc(gameDescName);
         OnEnable();
     }
 

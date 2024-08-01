@@ -6,25 +6,23 @@ public class GameDescRow : MonoBehaviour
 {
     [SerializeField] TextMeshProUGUI _name;
 
-    int _rowIndex;
-    Action<int> _loadCallback = null;
-    Action<int> _deleteCallback = null;
+    Action<string> _loadCallback = null;
+    Action<string> _deleteCallback = null;
 
-    public void OnInit(string gameDescName, int rowIndex, Action<int> loadCallback, Action<int> deleteCallback)
+    public void Init(string gameDescName, Action<string> loadCallback, Action<string> deleteCallback)
     {
         _name.text = gameDescName;
-        _rowIndex = rowIndex;
         _loadCallback = loadCallback;
         _deleteCallback = deleteCallback;
     }
 
     public void OnLoad()
     {
-        _loadCallback?.Invoke(_rowIndex);
+        _loadCallback?.Invoke(_name.text);
     }
 
     public void OnDelete()
     {
-        _deleteCallback?.Invoke(_rowIndex);
+        _deleteCallback?.Invoke(_name.text);
     }
 }
